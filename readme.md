@@ -7,7 +7,7 @@ pass: Semarang
 username: Ifan
 pass: Semarang
 - Admin (LOGIN VIA DOKTER)
-username: Admin
+username: admin
 pass: admin
 
 ## Fitur-fitur
