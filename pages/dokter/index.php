@@ -1,143 +1,221 @@
 <?php
-include_once("../../config/conn.php");
+include_once("../../../config/conn.php");
 session_start();
 
 if (isset($_SESSION['login'])) {
-  $_SESSION['login'] = true;
+    $_SESSION['login'] = true;
 } else {
-  echo "<meta http-equiv='refresh' content='0; url=../auth/login.php'>";
-  die();
+    echo "<meta http-equiv='refresh' content='0; url=../auth/login.php'>";
+    die();
 }
 
 $nama = $_SESSION['username'];
 $akses = $_SESSION['akses'];
 
-
-if ($akses != 'dokter') {
-  echo "<meta http-equiv='refresh' content='0; url=../..'>";
-  die();
+if ($akses != 'admin') {
+    echo "<meta http-equiv='refresh' content='0; url=../..'>";
+    die();
 }
-
-$totalPatientsQuery = "SELECT COUNT(*) as total FROM pasien";
-$totalPatientsResult = mysqli_query($conn, $totalPatientsQuery);
-$totalPatients = mysqli_fetch_assoc($totalPatientsResult)['total'];
 ?>
-<!DOCTYPE html>
-<html lang="en">
+<?php
+$title = 'Poliklinik | Obat';
+// Breadcrumb section
+ob_start();?>
+<ol class="breadcrumb float-sm-right">
+  <li class="breadcrumb-item"><a href="<?= $base_admin; ?>">Home</a></li>
+  <li class="breadcrumb-item active">Obat</li>
+</ol>
+<?php
+$breadcrumb = ob_get_clean();
+ob_flush();
 
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Poliklinik | Dashboard</title>
+// Title Section
+ob_start();?>
+Tambah / Edit Pasien
+<?php
+$main_title = ob_get_clean();
+ob_flush();
 
-   <!-- Google Font: Source Sans Pro -->
-   <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
-  <!-- Font Awesome -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/fontawesome-free/css/all.min.css">
-  <!-- Ionicons -->
-  <link rel="stylesheet" href="https://code.ionicframework.com/ionicons/2.0.1/css/ionicons.min.css">
-  <!-- Tempusdominus Bootstrap 4 -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/tempusdominus-bootstrap-4/css/tempusdominus-bootstrap-4.min.css">
-  <!-- iCheck -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/icheck-bootstrap/icheck-bootstrap.min.css">
-  <!-- JQVMap -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/jqvmap/jqvmap.min.css">
-  <!-- Theme style -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/dist/css/adminlte.min.css">
-  <!-- overlayScrollbars -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/overlayScrollbars/css/OverlayScrollbars.min.css">
-  <!-- Daterange picker -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/daterangepicker/daterangepicker.css">
-  <!-- summernote -->
-  <link rel="stylesheet" href="http://<?= $_SERVER['HTTP_HOST'] ?>/cindy/plugins/summernote/summernote-bs4.min.css">
-</head>
+// Content section
+ob_start();
 
-<style>
-    .summary-kategori{
-        background-color: #0a6b4a;
-        border-radius: 10px;
-        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        transition: margin-top 0.3s ease;
-    }
-    .summary-kategori:hover{
-        margin-top: 12px;
-    }
-    .summary-produk{
-        background-color: #0a516b;
-        border-radius: 10px;
-        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        transition: margin-top 0.3s ease;
-    }
-    .summary-produk:hover{
-        margin-top: 12px;
-    }
-    .summary-anggota{
-        background-color: #FF9C70;
-        border-radius: 10px;
-        box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
-        transition: margin-top 0.3s ease;
-    }
-    .summary-anggota:hover{
-        margin-top: 12px;
-    }
-    .no-decoration{
-        text-decoration: none;
-    }
-    .no-decoration:hover{
-        opacity: 50%;
-        transition: 0.5s;
-        text-decoration: none;
-    }
-</style>
+?>
+<form class="form col" method="POST" action="" required name="myForm" onsubmit="return(validate());">
+<?php
+    $nama = '';
+    $alamat = '';
+    $no_hp = '';
+    $no_ktp = '';
+    $no_rm = '';
+    if (isset($_GET['id'])) {
+        try {
+            $stmt = $pdo->prepare("SELECT * FROM pasien WHERE id = :id");
+            $stmt->bindParam(':id', $_GET['id']);
+            $stmt->execute();
 
-<body class="hold-transition sidebar-mini layout-fixed">
-  <div class="wrapper">
+            while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+                $nama = $row['nama'];
+                $alamat = $row['alamat'];
+                $no_hp = $row['no_hp'];
+                $no_ktp = $row['no_ktp'];
+                $no_rm = $row['no_rm'];
+            }
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    ?>
+        <input type="hidden" required name="id" value="<?php echo $_GET['id'] ?>">
 
-    <?php include "../../layouts/header.php" ?>
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <div class="content-header">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1 class="m-0">Dashboard <?= ucwords($_SESSION['akses']) ?></h1>
-            </div><!-- /.col -->
-            <div class="col-sm-6">
-              <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Dashboard v1</li>
-                
-              </ol>
-            </div><!-- /.col -->
-          </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-      </div>
-      <!-- /.content-header -->
-
-      <!-- Main content -->
-       <div class="container">
-        <div class="row">
-        <div class="col-lg-4 col-md-6 col-12 mb-3">
-                    <div class="summary-kategori p-4">
-                        <div class="row">
-                            <div class="col-12 text-white">
-                                <h3 class="fs-2 text-white">Total Pasien</h3>
-                                <p class="fs-4"><?php echo $totalPatients;?> Pasien</p>
-                            </div>
-                        </div>
-                    </div>
-                    
-                </div>
+    <?php
+    }
+    
+    // Jika sedang dalam mode ubah, isi Nomor RM sesuai data yang diubah
+    if (!isset($_GET['id'])) {
+        // Jika menambahkan data baru, hitung Nomor RM sesuai format
+        $tahun_bulan = date("Ym");
+        $query_last_id = "SELECT MAX(CAST(SUBSTRING(no_rm, 8) AS SIGNED)) as last_queue_number FROM pasien";
+        $result_last_id = $pdo->query($query_last_id);
+        $row_last_id = $result_last_id->fetch(PDO::FETCH_ASSOC);
+        $last_inserted_id = $row_last_id['last_queue_number'] ? $row_last_id['last_queue_number'] : 0;
+        $newQueueNumber = $last_inserted_id + 1;
+        $no_rm = $tahun_bulan . "-" . str_pad($newQueueNumber, 3, '0', STR_PAD_LEFT);
+       
+    }
+    ?>
+        <div class="row mt-3">
+            <label for="nama" class="form-label fw-bold">
+                Nama Pasien
+            </label>
+            <input type="text" class="form-control" required name="nama" id="nama" placeholder="Nama Pasien" value="<?php echo $nama ?>">
         </div>
-       </div>
-      <!-- /.content -->
-    </div>
-    <!-- /.content-wrapper -->
-    <?php include "../../layouts/footer.php"; ?>
-  </div>
-  <!-- ./wrapper -->
-  <?php include "../../layouts/pluginsexport.php"; ?>
-</body>
+        <div class="row mt-3">
+            <label for="alamat" class="form-label fw-bold">
+                Alamat
+            </label>
+            <input type="text" class="form-control" required name="alamat" id="alamat" placeholder="Alamat" value="<?php echo $alamat ?>">
+        </div>
+        <div class="row mt-3">
+            <label for="no_ktp" class="form-label fw-bold">
+                Nomor KTP
+            </label>
+            <input type="number" class="form-control" required name="no_ktp" id="no_ktp" placeholder="Nomor KTP" value="<?php echo $no_ktp ?>">
+        </div>
 
-</html>
+        <div class="row mt-3">
+            <label for="no_hp" class="form-label fw-bold">
+                Nomor Hp
+            </label>
+            <input type="number" class="form-control" required name="no_hp" id="no_hp" placeholder="Nomor HP" value="<?php echo $no_hp ?>">
+        </div>
+
+        <div class="row mt-3">
+            <label for="no_rm" class="form-label fw-bold">
+                Nomor RM
+            </label>
+            <input type="text" class="form-control" required name="no_rm" id="no_rm" readonly placeholder="Nomor RM" value="<?php echo $no_rm ?>">
+        </div>
+
+        <div class="row d-flex mt-3 mb-3">
+          <button type="submit" class="btn btn-primary" style="width: 3cm;" required name="simpan">Simpan</button>
+        </div>
+</form>
+
+<div class="row d-flex mt-3 mb-3">
+  <a href="<?= $base_admin.'/Pasien' ?>">
+    <button class="btn btn-secondary ml-2" style="width: 3cm;">Reset</button>
+  </a>
+</div>
+
+<div class="card">
+  <div class="card-header">
+    <h3 class="card-title">Pasien</h3>
+  </div>
+  <div class="card-body">
+    <table id="example1" class="table table-striped">
+      <thead>
+        <tr>
+          <th scope="col">No</th>
+          <th scope="col">Nama</th>
+          <th scope="col">Alamat</th>
+          <th scope="col">No. KTP</th>
+          <th scope="col">No. Hp</th>
+          <th scope="col">No. RM</th>
+          <th scope="col">Aksi</th>
+        </tr>
+      </thead>
+      <tbody>
+        <?php
+        $result = $pdo->query("SELECT * FROM pasien");
+        $no = 1;
+        while ($data = $result->fetch(PDO::FETCH_ASSOC)) {
+        ?>
+          <tr>
+              <td><?php echo $no++ ?></td>
+              <td><?php echo $data['nama'] ?></td>
+              <td><?php echo $data['alamat'] ?></td>
+              <td><?php echo $data['no_ktp'] ?></td>
+              <td><?php echo $data['no_hp'] ?></td>
+              <td><?php echo $data['no_rm'] ?></td>
+              <td>
+                  <a class="btn btn-success" href="index.php?id=<?php echo $data['id'] ?>">Ubah</a>
+                  <a class="btn btn-danger" href="index.php?id=<?php echo $data['id'] ?>&aksi=hapus">Hapus</a>
+              </td>
+          </tr>
+      <?php
+      }
+      ?>
+      </tbody>
+    </table>
+    <?php
+      if (isset($_POST['simpan'])) {
+        if (isset($_POST['id'])) {
+            $stmt = $pdo->prepare("UPDATE pasien SET 
+                                    nama = :nama,
+                                    alamat = :alamat,
+                                    no_ktp = :no_ktp,
+                                    no_hp = :no_hp,
+                                    no_rm = :no_rm
+                                    WHERE
+                                    id = :id");
+
+            $stmt->bindParam(':nama', $_POST['nama'], PDO::PARAM_STR);
+            $stmt->bindParam(':alamat', $_POST['alamat'], PDO::PARAM_STR);
+            $stmt->bindParam(':no_ktp', $_POST['no_ktp'], PDO::PARAM_INT);
+            $stmt->bindParam(':no_hp', $_POST['no_hp'], PDO::PARAM_INT);
+            $stmt->bindParam(':no_rm', $_POST['no_rm'], PDO::PARAM_STR);
+            $stmt->bindParam(':id', $_POST['id'], PDO::PARAM_INT);
+            $stmt->execute();
+
+            header('Location:index.php');
+
+        } else {
+            $stmt = $pdo->prepare("INSERT INTO pasien(nama, alamat, no_ktp, no_hp, no_rm) 
+                                    VALUES (:nama, :alamat, :no_ktp, :no_hp, :no_rm)");
+
+            $stmt->bindParam(':nama', $_POST['nama'], PDO::PARAM_STR);
+            $stmt->bindParam(':alamat', $_POST['alamat'], PDO::PARAM_STR);
+            $stmt->bindParam(':no_ktp', $_POST['no_ktp'], PDO::PARAM_INT);
+            $stmt->bindParam(':no_hp', $_POST['no_hp'], PDO::PARAM_INT);
+            $stmt->bindParam(':no_rm', $_POST['no_rm'], PDO::PARAM_STR);
+            $stmt->execute();
+
+            header('Location:index.php');
+        }
+    }
+    if (isset($_GET['aksi']) && $_GET['aksi'] == 'hapus') {
+    $stmt = $pdo->prepare("DELETE FROM pasien WHERE id = :id");
+    $stmt->bindParam(':id', $_GET['id']);
+    $stmt->execute();
+
+    header('Location:index.php');
+    
+    }
+    ?>
+  </div>
+</div>
+<?php
+$content = ob_get_clean();
+ob_flush();
+?>
+
+<?php include '../../../layouts/index.php'; ?>
