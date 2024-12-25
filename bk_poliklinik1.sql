@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Waktu pembuatan: 10 Des 2024 pada 04.24
+-- Waktu pembuatan: 25 Des 2024 pada 21.55
 -- Versi server: 10.4.32-MariaDB
 -- Versi PHP: 8.2.12
 
@@ -41,8 +41,11 @@ CREATE TABLE `daftar_poli` (
 --
 
 INSERT INTO `daftar_poli` (`id`, `id_pasien`, `id_jadwal`, `keluhan`, `no_antrian`, `status_periksa`) VALUES
-(6, 10, 1, 'acl', 3, 1),
-(20, 36, 1, '', 4, 0);
+(22, 38, 1, 'Sakit', 1, 1),
+(23, 39, 1, 'ACL', 2, 1),
+(24, 40, 1, 'Sakit dada', 3, 1),
+(25, 41, 1, 'Sakit mata', 4, 1),
+(26, 38, 9, 'Sakit pinggang', 1, 0);
 
 -- --------------------------------------------------------
 
@@ -56,6 +59,17 @@ CREATE TABLE `detail_periksa` (
   `id_obat` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data untuk tabel `detail_periksa`
+--
+
+INSERT INTO `detail_periksa` (`id`, `id_periksa`, `id_obat`) VALUES
+(27, 20, 54),
+(28, 21, 56),
+(29, 22, 58),
+(30, 23, 58),
+(31, 24, 58);
+
 -- --------------------------------------------------------
 
 --
@@ -66,7 +80,7 @@ CREATE TABLE `dokter` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) DEFAULT NULL,
   `alamat` varchar(255) DEFAULT NULL,
-  `no_hp` int UNSIGNED NOT NULL,
+  `no_hp` int(10) UNSIGNED NOT NULL,
   `id_poli` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
@@ -75,7 +89,7 @@ CREATE TABLE `dokter` (
 --
 
 INSERT INTO `dokter` (`id`, `nama`, `alamat`, `no_hp`, `id_poli`) VALUES
-(11, 'Ifan', 'Semarang', '489921018', 1);
+(11, 'Ifan', 'Semarang', 489921018, 1);
 
 -- --------------------------------------------------------
 
@@ -97,9 +111,9 @@ CREATE TABLE `jadwal_periksa` (
 --
 
 INSERT INTO `jadwal_periksa` (`id`, `id_dokter`, `hari`, `jam_mulai`, `jam_selesai`, `aktif`) VALUES
-(1, 11, 'Selasa', '07:00:00', '09:00:00', 'Y'),
+(1, 11, 'Selasa', '07:00:00', '09:00:00', 'T'),
 (2, 11, 'Selasa', '08:30:00', '10:20:00', 'T'),
-(9, 11, 'Sabtu', '07:00:00', '00:00:00', 'T');
+(9, 11, 'Sabtu', '07:00:00', '12:00:00', 'Y');
 
 -- --------------------------------------------------------
 
@@ -134,8 +148,8 @@ CREATE TABLE `pasien` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) NOT NULL,
   `alamat` varchar(255) NOT NULL,
-  `no_ktp` int UNSIGNED NOT NULL,
-  `no_hp` int UNSIGNED NOT NULL,
+  `no_ktp` int(10) UNSIGNED NOT NULL,
+  `no_hp` int(10) UNSIGNED NOT NULL,
   `no_rm` varchar(25) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
@@ -144,13 +158,10 @@ CREATE TABLE `pasien` (
 --
 
 INSERT INTO `pasien` (`id`, `nama`, `alamat`, `no_ktp`, `no_hp`, `no_rm`) VALUES
-(10, 'test1', 'test', '1245', '87724414526', NULL),
-(30, 'Pasien', 'Semarang', '313013010', '0823131', '202412-001'),
-(31, 'Pasien2', 'Semarang', '02313123', '08212131', '202412-002'),
-(33, 'Pasien3', 'Semarang', '23131231', '9231823', NULL),
-(34, 'Pasien4', 'Semarang', '31230130', '08213123', '202412-003'),
-(35, 'pasiencoba', 'semarang', '3213123', '30021301', '202412-004'),
-(36, 'Adi', 'Semarang', '3320032', '082119313', '202412-005');
+(38, 'Adi', 'Semarang', 320320, 82131, '202412-001'),
+(39, 'Cindy', 'Semarang', 3020320, 82121, '202412-002'),
+(40, 'Pasien', 'Semarang', 3200202, 89111, '202412-003'),
+(41, 'Jono', 'Semarang', 3203203, 82192121, '202412-004');
 
 -- --------------------------------------------------------
 
@@ -171,7 +182,11 @@ CREATE TABLE `periksa` (
 --
 
 INSERT INTO `periksa` (`id`, `id_daftar_poli`, `tgl_periksa`, `catatan`, `biaya_periksa`) VALUES
-(10, 6, '2024-06-03 16:40:00', 'acl leher', 550000);
+(20, 22, '2024-12-26 03:46:00', 'istirahat ya', 160000),
+(21, 23, '2024-12-26 03:46:00', 'Istirahat bos', 160000),
+(22, 24, '2024-12-26 03:46:00', 'Sakit Kepala', 164000),
+(23, 25, '2024-12-26 03:46:00', 'iyaa', 164000),
+(24, 22, '2024-12-26 03:48:00', 'Istirahat bos', 164000);
 
 -- --------------------------------------------------------
 
@@ -259,13 +274,13 @@ ALTER TABLE `poli`
 -- AUTO_INCREMENT untuk tabel `daftar_poli`
 --
 ALTER TABLE `daftar_poli`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=21;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
 -- AUTO_INCREMENT untuk tabel `detail_periksa`
 --
 ALTER TABLE `detail_periksa`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
 
 --
 -- AUTO_INCREMENT untuk tabel `dokter`
@@ -289,13 +304,13 @@ ALTER TABLE `obat`
 -- AUTO_INCREMENT untuk tabel `pasien`
 --
 ALTER TABLE `pasien`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=37;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=42;
 
 --
 -- AUTO_INCREMENT untuk tabel `periksa`
 --
 ALTER TABLE `periksa`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=18;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=25;
 
 --
 -- AUTO_INCREMENT untuk tabel `poli`
