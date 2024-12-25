@@ -53,7 +53,7 @@ pekerjaan saya untuk mengelola data pasien.
 
 ## Instalasi
 
-1. Klon repository: `link git nya.................`
+1. Klon repository: `https://github.com/cindyesa/cindy.git`
 
 2. Siapkan server web (misalnya, Apache) dan konfigurasikan agar menunjuk ke direktori publik proyek.
 
