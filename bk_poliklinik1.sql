@@ -66,7 +66,7 @@ CREATE TABLE `dokter` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) DEFAULT NULL,
   `alamat` varchar(255) DEFAULT NULL,
-  `no_hp` varchar(50) DEFAULT NULL,
+  `no_hp` int UNSIGNED NOT NULL,
   `id_poli` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
@@ -134,8 +134,8 @@ CREATE TABLE `pasien` (
   `id` int(11) NOT NULL,
   `nama` varchar(255) NOT NULL,
   `alamat` varchar(255) NOT NULL,
-  `no_ktp` varchar(255) NOT NULL,
-  `no_hp` varchar(50) NOT NULL,
+  `no_ktp` int UNSIGNED NOT NULL,
+  `no_hp` int UNSIGNED NOT NULL,
   `no_rm` varchar(25) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 COLLATE=latin1_swedish_ci ROW_FORMAT=DYNAMIC;
 
