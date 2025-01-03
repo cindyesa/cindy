@@ -24,24 +24,48 @@ $id = $url[count($url) - 1];
 
 $jadwal = query("SELECT * FROM jadwal_periksa WHERE id = $id")[0];
 
-// Input data to db
+// Input data ke database
 if (isset($_POST["submit"])) {
-    // Cek validasi
-    if (empty($_POST["hari"]) || empty($_POST["jam_mulai"]) || empty($_POST["jam_selesai"])) {
+    $hari = $_POST["hari"];
+    $jam_mulai = $_POST["jam_mulai"];
+    $jam_selesai = $_POST["jam_selesai"];
+    $aktif = $_POST["aktif"];
+
+    // Validasi input kosong
+    if (empty($hari) || empty($jam_mulai) || empty($jam_selesai)) {
         echo "
           <script>
               alert('Data tidak boleh kosong');
-              document.location.href = '../jadwal_periksa/edit.php';
-          </script>
-      ";
+              document.location.href = './edit.php/$id';
+          </script>";
         die;
-    } else {
-        // cek apakah data berhasil di ubah atau tidak
-        updateJadwalPeriksa($_POST, $id);
+    }
+
+    // Jika status diubah menjadi aktif, set semua jadwal lainnya menjadi tidak aktif
+    if ($aktif === 'Y') {
+        $queryReset = "UPDATE jadwal_periksa SET aktif = 'T' WHERE id_dokter = '$id_dokter' AND id != '$id'";
+        mysqli_query($conn, $queryReset);
+    }
+
+    // Update jadwal dengan data baru
+    $queryUpdate = "
+        UPDATE jadwal_periksa
+        SET hari = '$hari', jam_mulai = '$jam_mulai', jam_selesai = '$jam_selesai', aktif = '$aktif'
+        WHERE id = '$id'
+    ";
+    $result = mysqli_query($conn, $queryUpdate);
+
+    if ($result) {
         echo "
           <script>
               alert('Data berhasil diubah');
               document.location.href = '../';
+          </script>";
+    } else {
+        echo "
+          <script>
+              alert('Terjadi kesalahan saat mengubah data');
+              document.location.href = './edit.php/$id';
           </script>";
     }
 }
@@ -51,7 +75,7 @@ if (isset($_POST["submit"])) {
 $title = 'Poliklinik | Edit Jadwal Periksa';
 
 // Breadcrumb Section
-ob_start();?>
+ob_start(); ?>
 <ol class="breadcrumb float-sm-right">
   <li class="breadcrumb-item"><a href="<?=$base_dokter;?>">Home</a></li>
   <li class="breadcrumb-item"><a href="<?=$base_dokter . '/jadwal_periksa';?>">Jadwal Periksa</a></li>
@@ -62,7 +86,7 @@ $breadcrumb = ob_get_clean();
 ob_flush();
 
 // Title Section
-ob_start();?>
+ob_start(); ?>
 Edit Jadwal Periksa
 <?php
 $main_title = ob_get_clean();
@@ -71,58 +95,58 @@ ob_start();
 ?>
 <div class="card">
   <div class="card-header">
-    <h3 class="card-title">Tambah Jadwal Periksa</h3>
+    <h3 class="card-title">Edit Jadwal Periksa</h3>
   </div>
   <div class="card-body">
     <form action="" id="tambahJadwal" method="POST">
       <input type="hidden" name="id_dokter" value="<?= $id_dokter ?>">
-      
-      <!-- Pilih Hari -->
+
+      <!-- Pilih Hari (Read-Only) -->
       <div class="form-group">
         <label for="hari">Hari</label>
-        <select name="hari" id="hari" class="form-control">
+        <select name="hari" id="hari" class="form-control" disabled>
           <option hidden>-- Pilih Hari --</option>
           <?php
           $hari = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
           foreach ($hari as $h): ?>
-            <?php if ($h == $jadwal['hari']): ?>
-              <option value="<?= $h ?>" selected><?= $h ?></option>
-            <?php else: ?>
-              <option value="<?= $h ?>"><?= $h ?></option>
-            <?php endif; ?>
+            <option value="<?= $h ?>" <?= ($h == $jadwal['hari']) ? "selected" : ""; ?>>
+              <?= $h ?>
+            </option>
           <?php endforeach; ?>
         </select>
+        <!-- Kirim data Hari secara hidden -->
+        <input type="hidden" name="hari" value="<?= $jadwal['hari'] ?>">
       </div>
-      
-      <!-- Input Jam Mulai -->
+
+      <!-- Input Jam Mulai (Read-Only) -->
       <div class="form-group">
         <label for="jam_mulai">Jam Mulai</label>
-        <input type="time" name="jam_mulai" id="jam_mulai" class="form-control"
-               value="<?= date('H:i', strtotime($jadwal['jam_mulai'])) ?>">
+        <input type="time" name="jam_mulai" id="jam_mulai" class="form-control" 
+               value="<?= date('H:i', strtotime($jadwal['jam_mulai'])) ?>" readonly>
       </div>
-      
-      <!-- Input Jam Selesai -->
+
+      <!-- Input Jam Selesai (Read-Only) -->
       <div class="form-group">
         <label for="jam_selesai">Jam Selesai</label>
-        <input type="time" name="jam_selesai" id="jam_selesai" class="form-control"
-               value="<?= date('H:i', strtotime($jadwal['jam_selesai'])) ?>">
+        <input type="time" name="jam_selesai" id="jam_selesai" class="form-control" 
+               value="<?= date('H:i', strtotime($jadwal['jam_selesai'])) ?>" readonly>
       </div>
-      
+
       <!-- Radio Status -->
       <div class="form-group">
         <label for="aktif">Status</label>
         <div class="form-check">
           <input type="radio" id="aktif1" class="form-check-input" name="aktif" value="Y"
-                 <?php if ($jadwal['aktif'] == "Y") { echo "checked"; } ?>>
+                 <?= ($jadwal['aktif'] == "Y") ? "checked" : ""; ?>>
           <label for="aktif1" class="form-check-label">Aktif</label>
         </div>
         <div class="form-check">
           <input type="radio" id="tidak-aktif" class="form-check-input" name="aktif" value="T"
-                 <?php if ($jadwal['aktif'] == "T") { echo "checked"; } ?>>
+                 <?= ($jadwal['aktif'] == "T") ? "checked" : ""; ?>>
           <label for="tidak-aktif" class="form-check-label">Tidak Aktif</label>
         </div>
       </div>
-      
+
       <!-- Tombol Simpan -->
       <div class="d-flex justify-content-end">
         <button type="submit" name="submit" id="submitButton" class="btn btn-primary">
@@ -132,44 +156,8 @@ ob_start();
     </form>
   </div>
 </div>
-
-<script>
-  // Validasi Jam dan Kunci Input jika "Tidak Aktif" dipilih
-  document.addEventListener('DOMContentLoaded', function () {
-    const jam_mulai = document.querySelector('#jam_mulai');
-    const jam_selesai = document.querySelector('#jam_selesai');
-    const hari = document.querySelector('#hari');
-    const radioAktif = document.querySelector('#aktif1');
-    const radioTidakAktif = document.querySelector('#tidak-aktif');
-    const formElements = [jam_mulai, jam_selesai, hari];
-
-    // Fungsi untuk mengunci/membuka input berdasarkan status
-    function toggleFormElements() {
-      if (radioTidakAktif.checked) {
-        formElements.forEach(el => el.setAttribute('disabled', 'disabled'));
-      } else {
-        formElements.forEach(el => el.removeAttribute('disabled'));
-      }
-    }
-
-    // Cek status awal saat halaman dimuat
-    toggleFormElements();
-
-    // Event listener untuk perubahan status
-    radioAktif.addEventListener('change', toggleFormElements);
-    radioTidakAktif.addEventListener('change', toggleFormElements);
-
-    // Validasi Jam pada Submit
-    document.querySelector('#tambahJadwal').addEventListener('submit', function (e) {
-      if (jam_mulai.value >= jam_selesai.value) {
-        e.preventDefault();
-        alert('Jam mulai tidak boleh lebih dari atau sama dengan jam selesai');
-      }
-    });
-  });
-</script>
 <?php
 $content = ob_get_clean();
 ob_flush();
 ?>
-<?php include_once "../../../layouts/index.php";?>
+<?php include_once "../../../layouts/index.php"; ?>
